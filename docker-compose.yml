@@ -1,0 +1,22 @@
+rubbosapp:
+  container_name: "rubbosapp"
+  image: hudsonshan/rubbos_tomcat:app
+  net: ${NETWORK}
+
+tomcat84:
+  container_name: "tomcat84"
+  image: hudsonshan/rubbos_tomcat:base_jdbc2
+  ports:
+    - 8084:8080
+  volumes_from:
+    - rubbosapp
+  net: ${NETWORK}
+
+mysql3319:
+  container_name: "mysql3319"
+  image:  hudsonshan/rubbos_mysql
+  volumes_from:
+    - rubbosapp 
+  ports:
+    - 3319:3306
+  net: ${NETWORK}
