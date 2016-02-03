@@ -8,6 +8,70 @@
 set -e
 
 
+unit() {
+	echo  'ut'
+	cal $(date +"%m %Y") | awk 'NF {DAYS = $NF}; END {print DAYS}'
+
+}
+
+
+JmeterHome=/home/hshan/exp/apache-jmeter-2.13/bin
+ResultHome=/home/hshan/exp/experiments
+WorkloadHome=/home/hshan/exp/iExperiment/load
+CVSHeadFile=$ResultHome/head.csv
+WorkHome=/home/hshan/exp/iExperiment
+
+test_template() {
+
+	current_day=$(date | awk '{print $2$3}')
+	#right_now=$(date +"%x %r %Z")
+	echo $current_day
+	ResultHome=/home/hshan/exp/experiments/$current_day
+	
+	if [ ! -d "$ResultHome" ]
+	then mkdir "$ResultHome"
+	fi
+
+	#for conc in 100 200 400 800 1600
+	for conc in 1600
+	do
+		echo 
+		echo 'start: '$conc
+		test_name=${conc}_200000_browse
+		workload_file=$WorkloadHome/${test_name}.jmx 
+		echo $workload_file
+		echo $JmeterHome/jmeter -n -t $WorkloadHome/${test_name}.jmx -JpoolMax=$conc -l $ResultHome/${test_name}.jtl -j $ResultHome/${test_name}.log
+
+		rm -f ${test_name}.jtl ${test_name}.log
+		$JmeterHome/jmeter -n -t $WorkloadHome/${test_name}.jmx -JpoolMax=$conc -l $ResultHome/${test_name}.jtl -j $ResultHome/${test_name}.log
+	done
+}
+
+total_request=200
+analyze () {
+
+
+	current_day=$(date | awk '{print $2$3}')
+	echo $current_day
+	ResultHome=/home/hshan/exp/experiments/$current_day
+	result_file_list=''
+
+	for conc in 100 200 400 800 1600
+	do
+		echo 
+		echo 'start: '$conc
+		test_name=${conc}_200000_browse
+		rm -f $WorkHome/${test_name}.csv
+		cut_line="${total_request}q"
+		echo $cut_line
+		echo "cat $CVSHeadFile $ResultHome/${test_name}.jtl | sed -e '$cut_line' >  $WorkHome/${test_name}.csv"
+		cat $CVSHeadFile $ResultHome/${test_name}.jtl | sed -e '200000q' >  $WorkHome/${test_name}.csv
+		result_file_list="$result_file_list ${test_name}.csv"
+	done
+	echo python plot_result.py $result_file_list
+	python plot_result.py $result_file_list
+}
+
 
 create() {
 
@@ -91,14 +155,7 @@ test_db() {
 }
 
 
-JmeterHome=/home/hshan/exp/apache-jmeter-2.13/bin
-ResultHome=/home/hshan/exp/experiments/20160202
-WorkLoadHome=/home/hshan/exp/experiment/load
-test_template() {
-	test_name=test001
-	iCon=200
-	$JmeterHome/bin/jmeter -n -t $WorkloadHome/${test_name}.jmx -JpoolMax=$iCon -l $ResultHome/${test_name}.jtl -j $ResultHome/${test_name}.log
-}
+
 
 case $1 in
 	db)	
@@ -106,6 +163,12 @@ case $1 in
 		;;
 	test)
 		test_template
+		;;
+	anal)
+		analyze
+		;;
+	ut)
+		unit
 		;;
 	up)
 		create
