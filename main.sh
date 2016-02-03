@@ -38,12 +38,26 @@ test_template() {
 		echo 
 		echo 'start: '$conc
 		test_name=${conc}_200000_browse
+
+		#ssh node3  collectl -scmdn -i 0.1 -P -f $test_name -oTm  
+		#echo ssh node3 "collectl -scmdn -i 0.1 -P -f ./collectl_tmp/$test_name -oTm &"		
+		echo 'collectl -P -sms -p /var/log/collectl/cag-dl380-01-20070830-082013.raw.gz --from 08:29-08:30'
+		#echo "collectl -scmdn -i 0.1 -P -f ./collectl_tmp/$test_name -oTm &" > srv_collectl.sh		
+		echo "collectl -P -scmdn -i 0.1 -f ./collectl_tmp/$test_name -oz &" > srv_collectl.sh		
+		#scp srv_collectl.sh node3:~
+		#ssh node3 'bash -s' <  ~/srv_collectl.sh
+		ssh node3 rm -f ~/collectl_tmp/${test_name}*
+		ssh node3 'bash -s' <  ./srv_collectl.sh &
+
+
 		workload_file=$WorkloadHome/${test_name}.jmx 
 		echo $workload_file
 		echo $JmeterHome/jmeter -n -t $WorkloadHome/${test_name}.jmx -JpoolMax=$conc -l $ResultHome/${test_name}.jtl -j $ResultHome/${test_name}.log
-
 		rm -f ${test_name}.jtl ${test_name}.log
 		$JmeterHome/jmeter -n -t $WorkloadHome/${test_name}.jmx -JpoolMax=$conc -l $ResultHome/${test_name}.jtl -j $ResultHome/${test_name}.log
+
+		ssh node3 pkill collectl
+		scp node3:~/collectl_tmp/${test_name}* .
 	done
 }
 
