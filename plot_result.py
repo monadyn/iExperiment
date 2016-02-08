@@ -1,19 +1,29 @@
-#!/opt/local/bin/python2.6
+#!/usr/bin/python
  
-from pylab import *
+#from pylab import *
 import numpy as na
 import matplotlib.font_manager
 import csv
 import sys
- 
+#import matplotlib.pyplot as plt
+import matplotlib as mpl
+mpl.use('Agg')
+import matplotlib.pyplot as plt
+from matplotlib.pyplot import *
+
+from pprint import pprint 
 elapsed = {}
 timestamps = {}
 starttimes = {}
 errors = {}
  
+print sys.argv
+
+#jmeter threads  
 # Parse the CSV files
 for file in sys.argv[1:]:
-  threads = int(file.split('-')[0])
+  threads = int(file.split('_')[0])
+  
   for row in csv.DictReader(open(file)):
     if (not row['label'] in elapsed):
       elapsed[row['label']] = {}
@@ -30,17 +40,32 @@ for file in sys.argv[1:]:
     starttimes[row['label']][threads].append(int(row['timeStamp']) - int(row['elapsed']))
     if (row['success'] != 'true'):
       errors[row['label']][threads].append(int(row['elapsed']))
+
+if 0:
+  print '\nelapsed-->'
+  pprint( elapsed)
+  print '\ntimestamps-->'
+  pprint( timestamps)
+  print '\n-->starttimes'
+  pprint( starttimes)
+  print '\nerrors-->'
+  pprint( errors)
+  exit(1)
+
+print '\n'
  
 # Draw a separate figure for each label found in the results.
 for label in elapsed:
   # Transform the lists for plotting
+  print label
+
   plot_data = []
   throughput_data = [None]
   error_x = []
   error_y = []
   plot_labels = []
   column = 1
-  for thread_count in sort(elapsed[label].keys()):
+  for thread_count in sorted(elapsed[label].keys()):
     plot_data.append(elapsed[label][thread_count])
     plot_labels.append(thread_count)
     test_start = min(starttimes[label][thread_count])
@@ -58,7 +83,7 @@ for label in elapsed:
  
  
   # Start a new figure
-  fig = figure(figsize=(9, 6))
+  fig = plt.figure(figsize=(9, 6))
  
   # Pick some colors
   palegreen = matplotlib.colors.colorConverter.to_rgb('#8CFF6F')
@@ -67,7 +92,10 @@ for label in elapsed:
   # Plot response time
   ax1 = fig.add_subplot(111)
   ax1.set_yscale('log')
-  bp = boxplot(plot_data, notch=0, sym='+', vert=1, whis=1.5)
+  if 0:
+      pprint(plot_data)
+  else:
+      bp = plt.boxplot(plot_data, notch=0, sym='+', vert=1, whis=1.5)
  
   # Tweak colors on the boxplot
   plt.setp(bp['boxes'], color='g')
@@ -100,8 +128,8 @@ for label in elapsed:
   # Label the axis
   ax1.set_title(label)
   ax1.set_xlabel('Number of concurrent requests')
-  ax2.set_ylabel('Requests per second')
-  ax1.set_ylabel('Milliseconds')
+  ax2.set_ylabel('Throughput(Requests per second)')
+  ax1.set_ylabel('Response Time(Milliseconds)')
   ax1.set_xticks(range(1, len(plot_labels) + 1, 2))
   ax1.set_xticklabels(plot_labels[0::2])
   fig.subplots_adjust(top=0.9, bottom=0.15, right=0.85, left=0.15)
