@@ -1,0 +1,13 @@
+{
+    "id": "basic-4",
+    "container": {
+        "docker": {
+            "image": "ubuntu:14.04"
+        },
+        "type": "DOCKER",
+        "volumes": []
+    },
+    "cmd": "while sleep 10; do date -u +%T; done",
+    "instances": 1
+}
+

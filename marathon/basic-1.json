@@ -1,0 +1,15 @@
+{
+    "id": "jackex",
+    "container": {
+        "docker": {
+            "image": "ubuntu:14.04"
+        },
+        "type": "DOCKER",
+        "volumes": []
+    },
+    "cmd": "while sleep 10; do date -u +%T; done",
+    "cpus": 0.2,
+    "mem": 200,
+    "instances": 1
+}
+

@@ -1,0 +1,26 @@
+{
+  "id":"mysql3319",
+
+  "container":{
+    "docker":{
+      "image":"hudsonshan/rubbos_mysql",
+      "network": "BRIDGE",
+
+      "type":"DOCKER",
+      "portMappings":[
+	{ "containerPort": 3306, "hostPort": 0, "servicePort": 3319, "protocol": "tcp" }
+
+      ]
+    }
+  },
+  "cpus": 0.3,
+  "mem": 400.0,
+  "ports": [
+        3306,
+        3319
+    ],
+
+  "instances": 1
+
+}
+
